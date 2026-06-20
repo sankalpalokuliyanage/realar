@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>AI Background Removal</title>
+    <title>AR Crown Filter</title>
     <style>
-        body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        body { margin: 0; background: black; display: flex; justify-content: center; }
         #video { display: none; }
-        #output { width: 100%; max-width: 800px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+        #output { position: absolute; }
     </style>
 </head>
 <body>
     <video id="video" autoplay playsinline></video>
     <canvas id="output"></canvas>
 
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

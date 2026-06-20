@@ -1,43 +1,50 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('output');
 const ctx = canvas.getContext('2d');
+const crown = new Image();
+crown.src = 'crown.png'; // ඔබේ පින්තූරයේ නම
 
-const selfieSegmentation = new SelfieSegmentation({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
-});
+let faceLandmarker;
 
-// modelSelection: 1 මගින් වඩාත් පැහැදිලි segmentation එකක් ලබාගනී
-selfieSegmentation.setOptions({ modelSelection: 1 });
-selfieSegmentation.onResults(onResults);
+async function setup() {
+    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm");
+    faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+        baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task" },
+        runningMode: "VIDEO"
+    });
 
-function onResults(results) {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Quality වැඩි කිරීමට
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-
-    ctx.save();
-    
-    // මායිම් මෘදු කිරීමට blur එකක් එකතු කිරීම
-    ctx.filter = 'blur(2px)'; 
-    ctx.drawImage(results.segmentationMask, 0, 0, canvas.width, canvas.height);
-    
-    ctx.globalCompositeOperation = 'source-in';
-    ctx.filter = 'none'; 
-    ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-    
-    ctx.restore();
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+    video.play();
+    video.onloadeddata = predict;
 }
 
-const camera = new Camera(video, {
-    onFrame: async () => {
-        await selfieSegmentation.send({ image: video });
-    },
-    width: 1280, // High Resolution ලබාගැනීමට
-    height: 720
-});
-camera.start();
+async function predict() {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    const results = faceLandmarker.detectForVideo(video, performance.now());
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    if (results.faceLandmarks.length > 0) {
+        const landmarks = results.faceLandmarks[0];
+        // මුහුණේ ඉහළම ලක්ෂ්‍යය (හිස මුදුන සඳහා)
+        const topHead = landmarks[10]; 
+        
+        const crownWidth = 150;
+        const crownHeight = 100;
+        
+        ctx.drawImage(
+            crown, 
+            (topHead.x * canvas.width) - (crownWidth / 2), 
+            (topHead.y * canvas.height) - 100, 
+            crownWidth, 
+            crownHeight
+        );
+    }
+    requestAnimationFrame(predict);
+}
+
+setup();
