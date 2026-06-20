@@ -1,4 +1,4 @@
-import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.js";
+const { FaceLandmarker, FilesetResolver } = vision; // bundle එකෙන් කෙලින්ම ගනී
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('output');
@@ -7,17 +7,16 @@ const crown = new Image();
 crown.src = 'crown.png';
 
 async function setup() {
-    const vision = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
-);
+    const visionTask = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+    );
     
-    const faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+    const faceLandmarker = await FaceLandmarker.createFromOptions(visionTask, {
         baseOptions: {
             modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
             delegate: "GPU"
         },
-        runningMode: "VIDEO",
-        numFaces: 1
+        runningMode: "VIDEO"
     });
 
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -26,7 +25,7 @@ async function setup() {
     video.onloadeddata = () => predict(faceLandmarker);
 }
 
-async function predict(faceLandmarker) {
+function predict(faceLandmarker) {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     
@@ -34,7 +33,7 @@ async function predict(faceLandmarker) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+    if (results.faceLandmarks.length > 0) {
         const topHead = results.faceLandmarks[0][10];
         ctx.drawImage(crown, (topHead.x * canvas.width) - 75, (topHead.y * canvas.height) - 100, 150, 100);
     }
