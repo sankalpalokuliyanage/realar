@@ -1,4 +1,4 @@
-const { FaceLandmarker, FilesetResolver } = vision;
+import { FaceLandmarker, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/vision_bundle.js';
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('output');
