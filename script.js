@@ -1,18 +1,30 @@
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.js";
+
 const video = document.getElementById('video');
 const canvas = document.getElementById('output');
 const ctx = canvas.getContext('2d');
 const crown = new Image();
-crown.src = 'crown.png'; // ඔබේ පින්තූරයේ නම
+crown.src = 'crown.png'; 
 
 let faceLandmarker;
 
 async function setup() {
-    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm");
+    // 1. Vision Tasks setup
+    const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+    );
+    
+    // 2. FaceLandmarker initialize කිරීම
     faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task" },
-        runningMode: "VIDEO"
+        baseOptions: {
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+            delegate: "GPU"
+        },
+        runningMode: "VIDEO",
+        numFaces: 1
     });
 
+    // 3. කැමරාව ලබා ගැනීම
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = stream;
     video.play();
@@ -26,16 +38,18 @@ async function predict() {
     const results = faceLandmarker.detectForVideo(video, performance.now());
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // වීඩියෝව ඇඳීම
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    if (results.faceLandmarks.length > 0) {
+    if (results.faceLandmarks && results.faceLandmarks.length > 0) {
         const landmarks = results.faceLandmarks[0];
-        // මුහුණේ ඉහළම ලක්ෂ්‍යය (හිස මුදුන සඳහා)
+        // 10 වන landmark එක නළලේ මැද කොටසයි
         const topHead = landmarks[10]; 
         
         const crownWidth = 150;
         const crownHeight = 100;
         
+        // ඔටුන්න ඇඳීම
         ctx.drawImage(
             crown, 
             (topHead.x * canvas.width) - (crownWidth / 2), 
