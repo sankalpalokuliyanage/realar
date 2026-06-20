@@ -1,4 +1,4 @@
-import { FaceLandmarker, FilesetResolver } from "https://unpkg.com/@mediapipe/tasks-vision@0.10.3/vision_bundle.js";
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/dist/vision_bundle.js";
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('output');
@@ -9,8 +9,8 @@ crown.src = 'crown.png';
 async function setup() {
     // 1. WASM ගොනු සඳහා නිවැරදිම මග
     const vision = await FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
-    );
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+);
     
     const faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
         baseOptions: {
